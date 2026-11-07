@@ -116,6 +116,16 @@
       if(out.length>1&&out[0]===avoidId){[out[0],out[1]]=[out[1],out[0]];}
       return out;
     }
+    // 読み方が確認できた語句だけ、選択学年に応じて前後文脈を漢字化する。
+    // 書き取り対象(q.reading/q.answer)自体には触れない。
+    function displayContext(parts, fallback){
+      if(!Array.isArray(parts))return fallback;
+      const grade=Number(cfg.grade);
+      return parts.map(part=>{
+        if(Object.prototype.hasOwnProperty.call(part,'text'))return part.text;
+        return grade>=Number(part.minGrade)?part.kanji:part.kana;
+      }).join('');
+    }
     function current(){return history[position]||null;}
     function resetSession(){
       selected=filtered();deck=buildDeck(selected);round=1;history=[];position=0;answerVisible=false;
@@ -146,9 +156,9 @@
       $('question-number').innerHTML=`現在 <strong>${position+1}</strong> 問目`;
       $('card-eyebrow').textContent=answerVisible?'こたえ':'もんだい';
       const sentence=$('sentence');sentence.replaceChildren();
-      sentence.append(document.createTextNode(q.before));
+      sentence.append(document.createTextNode(displayContext(q.beforeParts,q.before)));
       const mark=document.createElement('strong');mark.className='target';mark.textContent=answerVisible?q.answer:q.reading;sentence.append(mark);
-      sentence.append(document.createTextNode(q.after));
+      sentence.append(document.createTextNode(displayContext(q.afterParts,q.after)));
       $('tap-tip').textContent=answerVisible?'もう一度タップで問題に戻る':'タップで答えを表示';
       $('flashcard').classList.toggle('is-answer',answerVisible);
       $('flashcard').setAttribute('aria-pressed',String(answerVisible));
