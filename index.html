@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2d62d9">
+  <meta name="description" content="漢字の書き取りカード。学年・漢字数を選び、文章の中のひらがなを漢字に直す練習ができます。">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon-192.png" type="image/png">
+  <title>漢字カード｜書き取り練習</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:#f4f7fd;color:#192947;line-height:1.55;color-scheme:light}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(ellipse 520px 360px at 0% 0%,#dce9ff,transparent),#f4f7fd;min-height:100dvh}
+    button,select{font:inherit}button{touch-action:manipulation;cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #83a7ff;outline-offset:3px}
+    main{width:min(100%,640px);margin:auto;padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+    .app-logo{width:44px;height:44px;border-radius:15px;background:#2d62d9;color:#fff;display:grid;place-items:center;font-size:26px;font-weight:900;box-shadow:0 5px 12px #2d62d933}
+    header{display:flex;gap:13px;align-items:center;margin:8px 0 17px}h1{margin:0;font-size:28px;font-weight:850;letter-spacing:.02em}header p{margin:1px 0 0;font-size:12px;color:#677895}
+    .panel{background:#fff;border:1px solid #dfe7f4;border-radius:19px;padding:16px;box-shadow:0 6px 20px #234c8510}
+    .panel-title{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;font-weight:800;margin:0 0 12px}
+    .pill{font-size:11px;font-weight:700;color:#3960a7;background:#eaf1ff;border-radius:99px;padding:5px 10px}
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{display:flex;flex-direction:column;gap:5px}.field label{font-size:12px;font-weight:750;color:#53637e}.field select{background:#fff;color:#1a3055;border:1px solid #cfdcee;border-radius:11px;padding:11px 10px;min-width:0;max-width:100%;font-size:14px}
+    .notice{font-size:11px;color:#7c89a1;margin:12px 1px 0;line-height:1.7}
+    .stats{display:flex;align-items:stretch;gap:9px;margin:13px 0}.stat{flex:1;background:#e9f1ff;border-radius:14px;padding:12px 7px;text-align:center;min-width:0}.stat .label{font-size:11px;color:#607592;display:block}.stat strong{display:block;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.4}.stat.small{background:#edf2f9}
+    .progress-outer{height:6px;background:#dce5f4;border-radius:999px;overflow:hidden}.progress-inner{height:100%;background:#2d62d9;width:0;transition:width .2s}.progress-caption{margin-top:7px;display:flex;justify-content:space-between;gap:10px;font-size:11px;color:#667895}
+    .question-meta{display:flex;justify-content:space-between;align-items:center;margin:16px 3px 10px;color:#667895;font-size:13px}.question-meta strong{color:#192947}
+    .flashcard{background:#fff;border:2px solid #d6e4fb;border-radius:24px;box-shadow:0 12px 30px #2c5da01b;width:100%;min-height:285px;padding:26px 18px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;color:#192947;text-align:center;transition:background .15s,transform .1s}
+    .flashcard:active{transform:scale(.994)}.flashcard.is-answer{background:#eaf2ff}
+    .card-eyebrow{font-size:12px;font-weight:800;letter-spacing:.18em;color:#7b8aa5}
+    .sentence{font-size:clamp(23px,5.7vw,35px);font-weight:550;line-height:1.9;overflow-wrap:anywhere;letter-spacing:.025em;max-width:100%;margin:auto 0}
+    .target{font-weight:950;color:#245bd1;background:#e8f0ff;padding:.03em .13em;border-radius:7px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+    .is-answer .target{color:#0e438f;background:#d5e5ff}
+    .tap-tip{font-size:12px;color:#7789a6}
+    .nav{display:grid;grid-template-columns:1fr 1.25fr;gap:12px;margin-top:15px}.nav button{min-height:62px;border-radius:15px;font-size:20px;font-weight:850}
+    .back{border:1px solid #ccd8eb;background:#e5edf9;color:#365275}.back:disabled{opacity:.4;cursor:default}.next{color:#fff;background:#2d62d9;border:1px solid #1d51c4;box-shadow:0 6px 15px #2d62d93b}
+    .tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.tools button{min-height:48px;border:1px solid #d5dfef;border-radius:13px;background:#fff;color:#506281;font-size:13px;font-weight:800}.tools .marked{color:#a06b08;background:#fff8e5;border-color:#f0d086}
+    .empty[hidden],#question-view[hidden]{display:none}.empty{padding:34px 18px;text-align:center;border:2px dashed #cdd9ef;border-radius:22px;background:#fff;min-height:250px;display:flex;flex-direction:column;justify-content:center;gap:10px;align-items:center}.empty h2{font-size:20px;margin:0}.empty p{color:#60728c;font-size:14px;margin:0}.empty button{background:#2d62d9;color:white;border:0;border-radius:12px;padding:12px 20px}
+    .message{margin:14px 0 0;text-align:center;font-size:12px;color:#637596;min-height:18px}.source-note{font-size:11px;color:#8190a8;line-height:1.8;margin:22px 2px 0;border-top:1px solid #dce5f2;padding-top:12px}
+    .source-note a{color:#436bcc}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:370px){main{padding-left:12px;padding-right:12px}.settings-grid{gap:9px}.field select{font-size:12px;padding:10px 6px}.sentence{font-size:23px}}
+    @media(prefers-reduced-motion:reduce){.progress-inner,.flashcard{transition:none}}
+  </style>
+</head>
+<body>
+  <main>
+    <header><div class="app-logo" aria-hidden="true">漢</div><div><h1>漢字カード</h1><p>ひらがなを漢字に直して、紙に書いてみよう</p></div></header>
+    <section class="panel" aria-label="出題設定">
+      <div class="panel-title">出題設定 <span class="pill">事前登録した問題から出題</span></div>
+      <div class="settings-grid">
+        <div class="field"><label for="grade">出題学年</label><select id="grade">
+          <option value="1">小学1年生</option><option value="2">小学2年生</option><option value="3">小学3年生</option>
+          <option value="4" selected>小学4年生</option><option value="5">小学5年生</option><option value="6">小学6年生</option>
+          <option value="7">中学1年生</option><option value="8">中学2年生</option><option value="9">中学3年生</option>
+        </select></div>
+        <div class="field"><label for="scope">学年の範囲</label><select id="scope"><option value="upto">その学年まで</option><option value="only">その学年だけ</option></select></div>
+        <div class="field"><label for="length">書く漢字の数</label><select id="length"><option value="mix">1〜4文字ランダム</option><option value="1">1文字</option><option value="2">2文字</option><option value="3">3文字</option><option value="4">4文字</option></select></div>
+        <div class="field"><label for="mode">問題の種類</label><select id="mode"><option value="normal">通常（苦手を優先）</option><option value="weak">苦手問題だけ</option></select></div>
+      </div>
+      <p class="notice" id="settings-note">学年・文字数などを変えると、その条件で問題を最初から出し直します。苦手登録は残ります。</p>
+    </section>
+    <div class="stats" aria-live="polite" aria-atomic="true">
+      <div class="stat"><span class="label">出題総数</span><strong id="total">–</strong></div>
+      <div class="stat small"><span class="label">この周の出題済み</span><strong id="shown">–</strong></div>
+      <div class="stat small"><span class="label">この周の残り</span><strong id="remaining">–</strong></div>
+    </div>
+    <div class="progress-outer" aria-hidden="true"><div class="progress-inner" id="progress-bar"></div></div>
+    <div class="progress-caption"><span id="length-breakdown">文字数別の件数を読み込み中</span><span id="progress-round">1周目</span></div>
+    <div class="question-meta"><span id="question-number">現在 1 問目</span><span id="weak-total">苦手登録 0 問</span></div>
+    <section id="question-view">
+      <button id="flashcard" class="flashcard" type="button" aria-label="答えを表示" aria-pressed="false"><span class="card-eyebrow" id="card-eyebrow">もんだい</span><span class="sentence" id="sentence"></span><span class="tap-tip" id="tap-tip">タップで答えを表示</span></button>
+      <div class="nav"><button class="back" id="back" type="button">← 戻る</button><button class="next" id="next" type="button">次へ →</button></div>
+      <div class="tools"><button type="button" id="weak-toggle">☆ 苦手に登録</button><button type="button" id="reset">↻ 問題数をリセット</button></div>
+    </section>
+    <section id="empty-view" class="empty" hidden><h2>この条件の問題は0問です</h2><p id="empty-explanation">ほかの学年・文字数を選んでください。</p><button type="button" id="show-all">通常出題に切り替える</button></section>
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+    <p class="source-note">問題文と出題データはアプリにあらかじめ登録した初期問題集です。中学1〜3年生の学年分けは全国共通の配当ではなく、アプリ独自の参考分類です。読みの習得時期は教科書・学校によって異なるため、厳密に教科書準拠ではありません。苦手登録と出題履歴はこの端末のブラウザに保存されます。<br>参考：<a href="https://www.mext.go.jp/content/20220606-mxt_kyoiku02-100002607_002.pdf" target="_blank" rel="noopener noreferrer">文部科学省 学習指導要領解説（国語編）</a>／<a href="https://www.mext.go.jp/a_menu/shotou/new-cs/1385768.htm" target="_blank" rel="noopener noreferrer">音訓の学校段階別割り振り表</a></p>
+  </main>
+  <script src="./questions.js"></script>
+  <script>
+  (()=>{
+    'use strict';
+    const $=id=>document.getElementById(id);
+    const bank=Array.isArray(window.KANJI_QUESTIONS)?window.KANJI_QUESTIONS:[];
+    const configEls=['grade','scope','length','mode'];
+    const CFG_KEY='kanji-card-settings-v1', WEAK_KEY='kanji-card-weak-v1', SESSION_KEY='kanji-card-session-v1';
+    const safeLoad=(key,fallback)=>{try{const x=JSON.parse(localStorage.getItem(key));return x??fallback;}catch{return fallback;}};
+    const save=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{}};
+    let cfg=Object.assign({grade:'4',scope:'upto',length:'mix',mode:'normal'},safeLoad(CFG_KEY,{}));
+    for(const id of configEls){if(![...$(id).options].some(o=>o.value===cfg[id]))cfg[id]=$(id).value;$(id).value=cfg[id];}
+    let weak=new Set(safeLoad(WEAK_KEY,[]).filter(id=>bank.some(q=>q.id===id)));
+    let selected=[],deck=[],history=[],position=0,round=1,answerVisible=false;
+    const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+    function filtered(){
+      const grade=Number(cfg.grade),len=cfg.length==='mix'?null:Number(cfg.length);
+      return bank.filter(q=>{
+        if(cfg.scope==='only'?q.grade!==grade:q.grade>grade)return false;
+        if(len!==null&&q.answer.length!==len)return false;
+        if(cfg.mode==='weak'&&!weak.has(q.id))return false;
+        return true;
+      });
+    }
+    function buildDeck(pool,avoidId=null){
+      const buckets=new Map();for(let l=1;l<=4;l++)buckets.set(l,shuffle(pool.filter(q=>q.answer.length===l)));
+      const lengths=shuffle([...buckets.keys()].filter(k=>buckets.get(k).length));
+      const out=[];let turn=0;
+      while(lengths.length){
+        const index=turn%lengths.length;
+        const bucket=buckets.get(lengths[index]);
+        const weakIndices=bucket.map((q,i)=>weak.has(q.id)?i:-1).filter(i=>i>=0);
+        const prefer=cfg.mode==='normal'&&weakIndices.length&&out.length%3===0;
+        const picked=prefer?bucket.splice(weakIndices[Math.floor(Math.random()*weakIndices.length)],1)[0]:bucket.shift();
+        out.push(picked.id);
+        if(bucket.length===0)lengths.splice(index,1);else turn++;
+      }
+      if(out.length>1&&out[0]===avoidId){[out[0],out[1]]=[out[1],out[0]];}
+      return out;
+    }
+    function current(){return history[position]||null;}
+    function resetSession(){
+      selected=filtered();deck=buildDeck(selected);round=1;history=[];position=0;answerVisible=false;
+      if(deck.length){history=[{id:deck.shift(),round:1}];}
+      saveSession();render();
+    }
+    function saveSession(){save(SESSION_KEY,{cfg,deck,history,position,round});}
+    function setMessage(s){$('message').textContent=s;}
+    function render(){
+      const pool=selected;const item=current(); const q=item?bank.find(v=>v.id===item.id):null;
+      $('total').textContent=String(pool.length);
+      $('weak-total').textContent=`苦手登録 ${weak.size} 問`;
+      $('question-view').hidden=!q;$('empty-view').hidden=!!q;
+      const counts=[1,2,3,4].map(n=>`${n}文字 ${pool.filter(v=>v.answer.length===n).length}`);
+      $('length-breakdown').textContent=cfg.length==='mix'?counts.join(' / '):counts[Number(cfg.length)-1]+' 問';
+      $('settings-note').textContent=Number(cfg.grade)>=7?'※中学1〜3年の区分はアプリ独自の参考分類です。設定変更で履歴をリセットし、苦手登録は残します。':'※学年は漢字の配当学年を基準としています。読みの習得学年は教科書ごとに異なります。';
+      if(!q){
+        $('shown').textContent='0';$('remaining').textContent='0';$('progress-bar').style.width='0%';$('progress-round').textContent='–';$('question-number').textContent='該当なし';
+        $('empty-explanation').textContent=cfg.mode==='weak'?'この条件で苦手登録した問題はありません。通常出題で問題を見つけて「苦手に登録」を押してください。':'登録済みの問題がありません。漢字数や学年の範囲を変更してください。';
+        $('show-all').hidden=cfg.mode!=='weak';return;
+      }
+      const thisRound=item.round;
+      const seen=new Set(history.filter(x=>x.round===thisRound).map(x=>x.id));
+      const done=seen.size;
+      $('shown').textContent=String(done);$('remaining').textContent=String(Math.max(pool.length-done,0));
+      $('progress-bar').style.width=`${pool.length?done/pool.length*100:0}%`;
+      $('progress-round').textContent=`${thisRound}周目`;
+      $('question-number').innerHTML=`現在 <strong>${position+1}</strong> 問目`;
+      $('card-eyebrow').textContent=answerVisible?'こたえ':'もんだい';
+      const sentence=$('sentence');sentence.replaceChildren();
+      sentence.append(document.createTextNode(q.before));
+      const mark=document.createElement('strong');mark.className='target';mark.textContent=answerVisible?q.answer:q.reading;sentence.append(mark);
+      sentence.append(document.createTextNode(q.after));
+      $('tap-tip').textContent=answerVisible?'もう一度タップで問題に戻る':'タップで答えを表示';
+      $('flashcard').classList.toggle('is-answer',answerVisible);
+      $('flashcard').setAttribute('aria-pressed',String(answerVisible));
+      $('flashcard').setAttribute('aria-label',answerVisible?'問題に戻す':'答えを表示');
+      $('back').disabled=position===0;
+      $('weak-toggle').textContent=weak.has(q.id)?'★ 苦手から外す':'☆ 苦手に登録';
+      $('weak-toggle').classList.toggle('marked',weak.has(q.id));
+    }
+    function next(){
+      if(!current())return;
+      if(position<history.length-1){position++;}
+      else{
+        if(!deck.length){round++;deck=buildDeck(selected,current().id);setMessage(`${round}周目に入りました。`);}
+        if(!deck.length)return;
+        history.push({id:deck.shift(),round});position++;
+      }
+      answerVisible=false;saveSession();render();
+    }
+    function back(){if(position===0)return;position--;answerVisible=false;saveSession();render();}
+    for(const id of configEls){$(id).addEventListener('change',()=>{
+      cfg[id]=$(id).value;save(CFG_KEY,cfg);setMessage('新しい出題条件で最初から始めました。');resetSession();
+    });}
+    $('flashcard').addEventListener('click',()=>{answerVisible=!answerVisible;render();});
+    $('back').addEventListener('click',back);$('next').addEventListener('click',next);
+    $('reset').addEventListener('click',()=>{resetSession();setMessage('この回の問題数と履歴をリセットしました。苦手登録は残っています。');});
+    $('weak-toggle').addEventListener('click',()=>{
+      const q=current();if(!q)return;const id=q.id;
+      if(weak.has(id)){weak.delete(id);setMessage('苦手登録を解除しました。');}
+      else{weak.add(id);setMessage('苦手問題に登録しました。');}
+      save(WEAK_KEY,[...weak]);
+      if(cfg.mode==='weak'){resetSession();setMessage('苦手問題の登録内容を反映しました。');}
+      else{render();}
+    });
+    $('show-all').addEventListener('click',()=>{$('mode').value='normal';cfg.mode='normal';save(CFG_KEY,cfg);resetSession();setMessage('通常出題に切り替えました。');});
+    document.addEventListener('keydown',e=>{
+      if(e.ctrlKey||e.altKey||e.metaKey||['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;
+      if(e.key==='ArrowLeft'){e.preventDefault();back();}
+      if(e.key==='ArrowRight'){e.preventDefault();next();}
+    });
+    function restore(){
+      selected=filtered();const saved=safeLoad(SESSION_KEY,null);
+      if(saved&&JSON.stringify(saved.cfg)===JSON.stringify(cfg)&&Array.isArray(saved.history)&&saved.history.length&&selected.length){
+        const ids=new Set(selected.map(q=>q.id));
+        const valid=saved.history.every(x=>ids.has(x.id)&&Number.isInteger(x.round));
+        if(valid){history=saved.history;round=Math.max(1,saved.round||1);position=Math.min(Math.max(0,saved.position||0),history.length-1);deck=Array.isArray(saved.deck)?saved.deck.filter(x=>ids.has(x)&&!history.some(i=>i.round===round&&i.id===x)):[];render();return;}
+      }
+      resetSession();
+    }
+    restore();
+    if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+      window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+    }
+  })();
+  </script>
+</body>
+</html>
