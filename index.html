@@ -44,7 +44,7 @@
 </head>
 <body>
   <main>
-    <header><div class="app-logo" aria-hidden="true">漢</div><div><h1>漢字カード</h1><p>ひらがなを漢字に直して、紙に書いてみよう</p></div></header>
+    <header><div class="app-logo" aria-hidden="true">漢</div><div><h1>漢字カード</h1><p>ひらがなを漢字に直して、紙に書いてみよう（v1.2）</p></div></header>
     <section class="panel" aria-label="出題設定">
       <div class="panel-title">出題設定 <span class="pill">事前登録した問題から出題</span></div>
       <div class="settings-grid">
@@ -76,7 +76,7 @@
     <p id="message" class="message" role="status" aria-live="polite"></p>
     <p class="source-note">問題文と出題データはアプリにあらかじめ登録した初期問題集です。中学1〜3年生の学年分けは全国共通の配当ではなく、アプリ独自の参考分類です。読みの習得時期は教科書・学校によって異なるため、厳密に教科書準拠ではありません。苦手登録と出題履歴はこの端末のブラウザに保存されます。<br>参考：<a href="https://www.mext.go.jp/content/20220606-mxt_kyoiku02-100002607_002.pdf" target="_blank" rel="noopener noreferrer">文部科学省 学習指導要領解説（国語編）</a>／<a href="https://www.mext.go.jp/a_menu/shotou/new-cs/1385768.htm" target="_blank" rel="noopener noreferrer">音訓の学校段階別割り振り表</a></p>
   </main>
-  <script src="./questions.js"></script>
+  <script src="./questions.js?v=1.2"></script>
   <script>
   (()=>{
     'use strict';
@@ -209,7 +209,11 @@
     }
     restore();
     if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
-      window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+      let reloadingForUpdate=false;
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{
+        if(!reloadingForUpdate){reloadingForUpdate=true;window.location.reload();}
+      });
+      window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{}));
     }
   })();
   </script>
