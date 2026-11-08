@@ -1,5 +1,5 @@
-const CACHE = 'kanji-card-v1.2-context-20261107';
-const FILES = ['./','./index.html','./questions.js?v=1.2','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+const CACHE = 'kanji-card-v1.3-context-20261108';
+const FILES = ['./','./index.html','./questions.js?v=1.3','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting()));
 });
